@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SkillForge.Samples
 {
     /// <summary>
-    /// SkillForge 를 씬에서 구동하는 부트스트랩 예제.
+    /// Skill Creator 를 씬에서 구동하는 부트스트랩 예제.
     /// StreamingAssets/GameData 의 JSON 을 로드해 SkillSystem 을 만들고, 매 프레임 버프를 Tick 한다.
     /// 스페이스바로 첫 적에게 fire_slash 를 사용한다.
     /// </summary>
@@ -42,7 +42,7 @@ namespace SkillForge.Samples
             if (Input.GetKeyDown(KeyCode.Space) && _caster != null)
             {
                 SkillUseResult result = _system.Use(_skillId, _caster, _target);
-                Debug.Log($"[SkillForge] {_skillId} -> {result.Status}");
+                Debug.Log($"[Skill Creator] {_skillId} -> {result.Status}");
             }
         }
 

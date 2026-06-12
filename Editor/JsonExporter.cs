@@ -49,7 +49,7 @@ namespace SkillForge.EditorTools
             if (path.Replace('\\', '/').StartsWith("Assets/"))
                 AssetDatabase.ImportAsset(path);
 
-            Debug.Log($"[SkillForge] 저장 완료: {path}");
+            Debug.Log($"[Skill Creator] 저장 완료: {path}");
         }
     }
 }

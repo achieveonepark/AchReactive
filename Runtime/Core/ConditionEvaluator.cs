@@ -54,7 +54,7 @@ namespace SkillForge
                     return targets.Count <= condition.value;
 
                 default:
-                    Debug.LogWarning($"[SkillForge] 지원하지 않는 조건 타입: {condition.type}");
+                    Debug.LogWarning($"[Skill Creator] 지원하지 않는 조건 타입: {condition.type}");
                     return false;
             }
         }

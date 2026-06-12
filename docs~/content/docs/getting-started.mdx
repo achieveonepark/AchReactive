@@ -1,6 +1,6 @@
 ---
 title: 시작하기
-description: SkillForge 설치부터 첫 스킬 실행까지.
+description: Skill Creator 설치부터 첫 스킬 실행까지.
 ---
 
 ## 설치
@@ -25,12 +25,12 @@ https://github.com/achieveonepark/skill-creator.git
 
 ## 1. 통합 경계 구현
 
-SkillForge 는 여러분의 전투 시스템을 강제하지 않습니다. 대신 두 인터페이스만 구현하면 연결됩니다.
+Skill Creator 는 여러분의 전투 시스템을 강제하지 않습니다. 대신 두 인터페이스만 구현하면 연결됩니다.
 
 - `IBattleUnit` — 전투 유닛 (캐릭터/몬스터)
 - `IUnitRegistry` — 광역 타겟팅을 위한 유닛 조회
 
-`Stats` / `Cooldowns` / `Buffs` 는 SkillForge 가 제공하는 구현체(`StatSheet`, `CooldownStore`, `BuffContainer`)를 그대로 사용하면 됩니다.
+`Stats` / `Cooldowns` / `Buffs` 는 Skill Creator 가 제공하는 구현체(`StatSheet`, `CooldownStore`, `BuffContainer`)를 그대로 사용하면 됩니다.
 
 ```csharp
 public sealed class MyUnit : MonoBehaviour, IBattleUnit

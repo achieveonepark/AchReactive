@@ -21,10 +21,10 @@ namespace SkillForge.EditorTools
         private Vector2 _detailScroll;
         private ValidationReport _report;
 
-        [MenuItem("Tools/SkillForge/Skill Editor")]
+        [MenuItem("Tools/Skill Creator/Skill Editor")]
         public static void Open()
         {
-            GetWindow<SkillEditorWindow>("SkillForge - Skills");
+            GetWindow<SkillEditorWindow>("Skill Creator - Skills");
         }
 
         private void OnEnable()

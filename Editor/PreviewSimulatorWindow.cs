@@ -24,10 +24,10 @@ namespace SkillForge.EditorTools
         private string _log = "";
         private Vector2 _scroll;
 
-        [MenuItem("Tools/SkillForge/Preview Simulator")]
+        [MenuItem("Tools/Skill Creator/Preview Simulator")]
         public static void Open()
         {
-            GetWindow<PreviewSimulatorWindow>("SkillForge - Preview");
+            GetWindow<PreviewSimulatorWindow>("Skill Creator - Preview");
         }
 
         private void OnGUI()

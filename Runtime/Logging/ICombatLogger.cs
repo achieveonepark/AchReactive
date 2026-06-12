@@ -17,7 +17,7 @@ namespace SkillForge
 
         public void Log(string message)
         {
-            Debug.Log($"[SkillForge] {message}");
+            Debug.Log($"[Skill Creator] {message}");
         }
     }
 

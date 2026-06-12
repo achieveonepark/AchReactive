@@ -1,4 +1,4 @@
-# SkillForge
+# Skill Creator
 
 Unity에서 **스킬, 버프, 타겟팅, 조건, 효과를 데이터(JSON) 조합으로 제작하고 검증**하는 콘텐츠 제작 도구입니다.
 
@@ -53,7 +53,7 @@ StartCoroutine(system.Runner.UseRoutine("fire_slash", caster, target,
 
 ## 에디터 도구
 
-`Tools/SkillForge` 메뉴:
+`Tools/Skill Creator` 메뉴:
 
 - **Skill Editor** — 스킬 목록/추가/삭제/복제/편집, JSON 저장, 검증
 - **Buff Editor** — 버프 목록/스탯·주기 효과 편집, JSON 저장, 검증

@@ -1,6 +1,6 @@
 # Basic Setup 샘플
 
-SkillForge 를 씬에서 구동하는 최소 예제입니다.
+Skill Creator 를 씬에서 구동하는 최소 예제입니다.
 
 ## 포함 파일
 

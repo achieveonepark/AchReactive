@@ -4,8 +4,8 @@ namespace SkillForge
 {
     /// <summary>
     /// 스킬/버프 시스템이 다루는 전투 유닛의 통합 경계.
-    /// 사용자의 전투 시스템이 이 인터페이스를 구현하면 SkillForge 와 연결된다.
-    /// Stats / Cooldowns / Buffs 는 SkillForge 가 제공하는 구현체를 그대로 사용할 수 있다.
+    /// 사용자의 전투 시스템이 이 인터페이스를 구현하면 Skill Creator 와 연결된다.
+    /// Stats / Cooldowns / Buffs 는 Skill Creator 가 제공하는 구현체를 그대로 사용할 수 있다.
     /// </summary>
     public interface IBattleUnit
     {

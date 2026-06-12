@@ -18,10 +18,10 @@ namespace SkillForge.EditorTools
         private Vector2 _detailScroll;
         private ValidationReport _report;
 
-        [MenuItem("Tools/SkillForge/Buff Editor")]
+        [MenuItem("Tools/Skill Creator/Buff Editor")]
         public static void Open()
         {
-            GetWindow<BuffEditorWindow>("SkillForge - Buffs");
+            GetWindow<BuffEditorWindow>("Skill Creator - Buffs");
         }
 
         private void OnEnable()

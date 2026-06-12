@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace SkillForge
 {
     /// <summary>
-    /// SkillForge 의 모든 구성요소를 배선하는 파사드.
+    /// Skill Creator 의 모든 구성요소를 배선하는 파사드.
     /// 데이터 로드부터 스킬 실행, 버프 진행(Tick)까지 하나의 진입점으로 제공한다.
     /// </summary>
     public sealed class SkillSystem
