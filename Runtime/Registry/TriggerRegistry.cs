@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>트리거 가드: 채널 이름이 일치한 뒤, 추가로 발동 여부를 판정한다.</summary>
     public delegate bool TriggerFn(ReactionContext ctx, ParamBag triggerParams);
@@ -31,7 +31,7 @@ namespace GameData
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[GameData] '{attr.Name}' trigger 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
+                    Debug.LogError($"[AchReactive] '{attr.Name}' trigger 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
                                    $"시그니처는 'static bool {method.Name}(ReactionContext, ParamBag)' 여야 합니다. {e.Message}");
                 }
             }

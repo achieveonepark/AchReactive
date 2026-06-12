@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// JSON 문자열을 정의 목록으로 역직렬화한다. Newtonsoft.Json 을 사용하므로

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 데이터를 어디서 읽어오든 동일하게 다루기 위한 경계.

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// CSV 한 행(컬럼명 → 셀 값)을 데이터 객체로 변환한다.

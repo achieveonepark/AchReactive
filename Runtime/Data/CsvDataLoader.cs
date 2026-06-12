@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// CSV 텍스트를 정의 목록으로 변환한다. 첫 행을 헤더(컬럼명)로 사용하고,

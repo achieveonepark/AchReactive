@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>effect 이름 → 실행 함수.</summary>
     public delegate void EffectFn(ReactionContext ctx);
@@ -30,7 +30,7 @@ namespace GameData
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[GameData] '{attr.Name}' effect 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
+                    Debug.LogError($"[AchReactive] '{attr.Name}' effect 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
                                    $"시그니처는 'static void {method.Name}(ReactionContext)' 여야 합니다. {e.Message}");
                 }
             }

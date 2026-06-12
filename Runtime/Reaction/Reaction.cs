@@ -1,6 +1,6 @@
 using System;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 하나의 반응 규칙: 특정 트리거가 발생했을 때, 조건을 모두 만족하면 효과들을 실행한다.

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 도메인 무관 기본 엔티티 데이터. 그대로 사용해도 되고, 도메인별 필드를 더하려면 상속한다.

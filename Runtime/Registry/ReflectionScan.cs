@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 로드된 모든 어셈블리에서 특정 어트리뷰트가 붙은 정적 메서드를 찾는다.

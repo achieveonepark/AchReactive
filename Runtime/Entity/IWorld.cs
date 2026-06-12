@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 엔티티 스폰/조회 등 게임 월드와의 통합 경계. 사용자 게임이 구현한다.

@@ -1,4 +1,4 @@
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 모든 데이터 정의의 공통 계약. id 로 조회되는 모든 도메인(스킬/몬스터/아이템/맵/퀘스트)이 구현한다.

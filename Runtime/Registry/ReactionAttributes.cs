@@ -1,6 +1,6 @@
 using System;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 정적 메서드를 effect 로 등록한다. 시그니처는 <c>static void M(ReactionContext)</c>.

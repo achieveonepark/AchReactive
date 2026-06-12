@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// effect / condition / trigger 가 받는 임의 키-값 인자 묶음.

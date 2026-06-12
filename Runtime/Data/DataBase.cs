@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// id → 정의 의 인메모리 인덱스. 모든 도메인이 이 한 클래스를 제네릭으로 공유한다.

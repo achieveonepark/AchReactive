@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 한 번의 리액션 실행에 필요한 모든 주변 정보. 엔진이 effect/condition 마다

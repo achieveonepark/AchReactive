@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameData
+namespace AchReactive
 {
     /// <summary>condition 이름 → 평가 함수. 현재 항목 인자는 ctx.Params 로 전달된다.</summary>
     public delegate bool ConditionFn(ReactionContext ctx);
@@ -30,7 +30,7 @@ namespace GameData
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[GameData] '{attr.Name}' condition 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
+                    Debug.LogError($"[AchReactive] '{attr.Name}' condition 등록 실패: {method.DeclaringType?.Name}.{method.Name} — " +
                                    $"시그니처는 'static bool {method.Name}(ReactionContext)' 여야 합니다. {e.Message}");
                 }
             }
@@ -52,7 +52,7 @@ namespace GameData
             if (name != null && _map.TryGetValue(name, out ConditionFn fn))
                 return fn(ctx);
 
-            Debug.LogWarning($"[GameData] 미등록 condition '{name}' — false 로 처리합니다.");
+            Debug.LogWarning($"[AchReactive] 미등록 condition '{name}' — false 로 처리합니다.");
             return false;
         }
 

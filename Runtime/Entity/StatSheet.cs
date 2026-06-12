@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SkillCreator
+namespace AchReactive
 {
     /// <summary>
     /// 기본 스탯 + 수정자(modifier)를 관리한다.
@@ -39,20 +39,6 @@ namespace SkillCreator
                 Value = value,
                 Source = source
             });
-        }
-
-        public void AddModifiers(IEnumerable<StatModifierDefinition> mods, object source, float scale = 1f)
-        {
-            if (mods == null)
-                return;
-
-            foreach (StatModifierDefinition mod in mods)
-            {
-                if (mod == null || string.IsNullOrEmpty(mod.statKey))
-                    continue;
-
-                AddModifier(mod.statKey, mod.modifierType, mod.value * scale, source);
-            }
         }
 
         /// <summary>지정한 source 로 추가된 모든 수정자를 제거한다.</summary>

@@ -1,12 +1,8 @@
 {
-  "name": "SkillCreator.Editor",
-  "rootNamespace": "SkillCreator.EditorTools",
-  "references": [
-    "SkillCreator.Runtime"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
+  "name": "AchReactive.Runtime",
+  "rootNamespace": "AchReactive",
+  "references": [],
+  "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,

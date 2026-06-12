@@ -1,4 +1,4 @@
-namespace GameData
+namespace AchReactive
 {
     /// <summary>
     /// 리액션 실행 엔진. 특정 트리거에 대해 엔티티의 reactions 를 순회하며
