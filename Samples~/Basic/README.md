@@ -31,3 +31,19 @@ Space → engine.Run("on_use", fire_slash, ctx)
 
 `damage`, `heal` 같은 기본 effect 는 패키지가 제공하므로 별도 코드가 필요 없습니다.
 새 동작이 필요하면 `[Effect("이름")]` 정적 메서드 하나만 추가하면 자동 등록됩니다.
+
+## 두 번째 도메인 — 몬스터 (`MonsterData.cs`, `monsters.json`)
+
+스킬과 **완전히 같은 방식**으로 몬스터를 만듭니다. 시스템 코드는 0줄입니다.
+
+```csharp
+var monsters = new DataBase<MonsterData>();
+monsters.Load(new JsonDataLoader<MonsterData>(() => monstersJson.text));
+
+// 몬스터가 피격당했을 때 (HP 30% 이하면 광폭화)
+engine.Run("on_hp_below", monsters.Get("goblin_boss"), new ReactionContext { Source = monster });
+```
+
+`goblin_boss` 의 `on_hp_below` 리액션은 스킬이 쓰는 것과 **동일한** `add_modifier`·`log`
+effect 를 재사용합니다. 도메인이 늘어도 동작 풀과 실행 코드(`engine.Run`)는 그대로입니다.
+이것이 "도메인 × 동작"을 "도메인 + 동작"으로 바꾸는 핵심입니다.

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "goblin_boss",
+    "expReward": 250,
+    "reactions": [
+      {
+        "trigger": "on_hp_below",
+        "triggerParams": { "threshold": 0.3 },
+        "effects": [
+          { "type": "add_modifier", "params": { "stat": "atk", "modifier": "percent_add", "value": 0.5, "source": "enrage" } },
+          { "type": "log", "params": { "message": "goblin_boss 광폭화! 공격력 +50%" } }
+        ]
+      }
+    ]
+  }
+]
