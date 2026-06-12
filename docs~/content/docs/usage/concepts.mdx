@@ -1,81 +1,77 @@
 ---
 title: 핵심 컨셉
-description: 실행 흐름과 설계 철학 — 왜 데이터 기반인가.
+description: 트리거·조건·효과와 도메인 무관 데이터 모델.
 ---
 
-## 실행 흐름
+## 곱셈을 덧셈으로
 
-모든 스킬은 동일한 파이프라인을 따릅니다.
+도메인마다 전용 시스템(SkillSystem, MonsterSystem, …)을 만들면
+`도메인 × 동작` 매트릭스를 매번 채워야 합니다. AchReactive 는 **동작 풀을 모든 도메인이
+공유**하게 만들어 이를 `도메인 + 동작` 으로 바꿉니다.
 
-```text
-Trigger → Targeting → Condition → Effect → Result
+- 새 도메인 추가 → 데이터 클래스 1개 (시스템 코드 0)
+- 이미 있는 동작 재사용 → 코드 0, 데이터만
+- 진짜 새 동작 → 함수 1개, 이후 모든 도메인이 공유
+
+## 4개의 레이어
+
+```
+Data Layer       IData · IDataLoader<T> · DataBase<T>      (제네릭, 패키지 제공)
+Reaction Layer   Reaction · ReactionEngine · Registry      (제네릭, 패키지 제공)
+Behavior Pool    [Effect("damage")] [Condition("alive")]   (게임 작성, 도메인 무관)
+Domain Data      SkillData · MonsterData · ItemData         (데이터, 코드젠 가능)
 ```
 
-| 단계 | 담당 | 설명 |
-| --- | --- | --- |
-| Trigger | `SkillRunner` | 스킬 사용 요청. 쿨타임을 확인한다. |
-| Targeting | `TargetResolver` | 타겟팅 정의로 실제 대상 목록을 계산한다. |
-| Condition | `ConditionEvaluator` | 효과 실행 전 조건을 AND 로 검사한다. |
-| Effect | `EffectExecutor` | 효과 목록을 순차 실행한다. |
-| Result | — | 데미지/힐/버프 적용, 쿨타임 시작, 로그 기록. |
+위 두 레이어는 패키지가 제공하며 바뀌지 않습니다. 아래 두 레이어만 채우면 됩니다.
 
-`SkillRunner.Use` 의 실제 순서는 다음과 같습니다.
+## 리액션 = 트리거 → 조건 → 효과
 
-```text
-1. SkillDefinition 조회
-2. 쿨타임 확인
-3. 타겟 목록 계산
-4. 조건 검사
-5. (캐스팅 시간 대기 — UseRoutine 한정)
-6. Effect 목록 순차 실행
-7. 쿨타임 적용
-8. 실행 로그 기록
+모든 도메인은 같은 언어로 표현됩니다.
+
+```
+Reaction
+ ├─ trigger      "on_use" | "on_hit" | "on_hp_below" ...
+ ├─ conditions   AND 로 평가 (alive, hp_below, chance ...)
+ └─ effects      순서대로 실행 (damage, heal, add_modifier ...)
 ```
 
-## 작은 조각의 조합
+도메인이 달라도 형태는 동일합니다.
 
-스킬은 거대한 클래스가 아니라 데이터 조각의 조합입니다.
+```json
+// 스킬 — 사용 시 피해
+{ "trigger": "on_use",
+  "effects": [{ "type": "damage", "params": { "power": 1.8 } }] }
 
-```text
-Skill
- ├─ Targeting   (어디를 칠 것인가)
- ├─ Condition[] (실행해도 되는가)
- └─ Effect[]    (무엇을 할 것인가)
+// 몬스터 — HP 30% 이하에서 광폭화
+{ "trigger": "on_hp_below", "triggerParams": { "threshold": 0.3 },
+  "effects": [{ "type": "add_modifier", "params": { "stat": "atk", "modifier": "percent_add", "value": 0.5 } }] }
+
+// 아이템 — 장착 시 오라
+{ "trigger": "on_equip",
+  "effects": [{ "type": "add_modifier", "params": { "stat": "def", "modifier": "flat", "value": 5 } }] }
 ```
 
-새로운 스킬은 **코드가 아니라 데이터**로 만들어집니다. 같은 `damage` / `add_buff` / `play_vfx` 조각을 다르게 조합하면 전혀 다른 스킬이 됩니다.
-
-## 왜 ScriptableObject 를 최소화하나
-
-`ScriptableObject` 는 Unity Editor 안에서는 편하지만, 콘텐츠 양산 도구로 보면 한계가 있습니다.
-
-- 외부 툴(Spreadsheet/서버)과 연동이 불편함
-- 런타임 패치가 까다로움
-- 대량 데이터의 diff 확인이 불편함
-- 기획자가 Unity Editor 를 반드시 열어야 함
-- 운영 중 밸런스 수정 반영 흐름이 무거움
-
-그래서 Skill Creator 는 **JSON 을 1차 저장 형식**으로 사용하고, 다음 순서의 운용을 우선합니다.
-
-```text
-JSON → CSV → Google Spreadsheet Export → Remote Config → CDN → Addressables TextAsset
-```
+`add_modifier` 는 스킬이 쓰든 아이템이 쓰든 **같은 코드 하나**입니다.
 
 ## 통합 경계
 
-Skill Creator 는 특정 전투 시스템을 강제하지 않습니다. 다음 인터페이스가 경계입니다.
+게임은 두 인터페이스만 구현합니다.
 
-| 인터페이스 | 역할 | 필수 |
-| --- | --- | --- |
-| `IBattleUnit` | 전투 유닛 추상화 | ✅ |
-| `IUnitRegistry` | 광역 타겟팅용 유닛 조회 | circle/cone 사용 시 |
-| `IVfxPlayer` / `ISfxPlayer` | 연출 재생 | 선택 |
-| `ICombatLogger` | 실행 로그 | 선택 |
+- **`IEntity`** — `Id`, `Position`, `Stats`(StatSheet), `IsAlive`
+- **`IWorld`** — `Spawn`, `Collect`
 
-유닛이 가지는 `StatSheet`, `CooldownStore`, `BuffContainer` 는 Skill Creator 가 제공하므로 직접 구현할 필요가 없습니다.
+effect/condition 은 `ReactionContext` 를 통해 `Source`/`Target`/`Targets`/`World` 에 접근합니다.
 
-## MVP 범위
+## typeof 를 쓰지 않는다
 
-처음부터 노드 그래프나 완전한 수식 파서를 만들지 않습니다. MVP 는 **데이터를 만들고, 검증하고, 런타임에서 실행하는 것**까지입니다.
+여러 도메인을 묶을 때 `Dictionary<Type, object>` 같은 타입-키 서비스 로케이터를 쓰지 않습니다.
+각 `DataBase<T>` 를 **명시적으로 보유**하고, 크로스 도메인 참조가 필요한 effect 는
+[수동등록 + 클로저 캡처](/usage/extending#크로스-도메인)로 해결합니다.
 
-지원 타입은 [데이터 포맷](/data-format) 문서를 참고하세요.
+```csharp
+public sealed class GameDataContext
+{
+    public readonly DataBase<SkillData>   Skills   = new();
+    public readonly DataBase<MonsterData> Monsters = new();
+}
+```

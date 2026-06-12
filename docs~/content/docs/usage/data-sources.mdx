@@ -1,0 +1,95 @@
+---
+title: 데이터와 소스
+description: IData, DataBase, 그리고 JSON·CSV·커스텀 로더.
+---
+
+## IData 와 DataBase
+
+모든 도메인 데이터는 `IData`(= `string Id`)를 구현합니다. `DataBase<T>` 는 `id → 정의` 의
+인메모리 인덱스로, **모든 도메인이 이 한 클래스를 제네릭으로 공유**합니다.
+
+```csharp
+var skills = new DataBase<SkillData>();
+skills.Load(loader);              // 전체 교체
+skills.Add(loader);               // 병합
+SkillData s = skills.Get("fire_slash");
+bool has   = skills.Has("fire_slash");
+```
+
+## 소스 무관 — IDataLoader&lt;T&gt;
+
+데이터를 어디서 읽든 `IDataLoader<T>` 라는 동일한 경계를 통합니다. 패키지는 두 구현을 제공합니다.
+
+### JSON
+
+Newtonsoft.Json 기반이라 최상위 배열을 그대로 읽습니다. (래퍼 클래스 불필요)
+
+```csharp
+// 문자열 직접
+skills.Load(new JsonDataLoader<SkillData>(json));
+
+// 읽기 지연 (파일/StreamingAssets/네트워크)
+skills.Load(new JsonDataLoader<SkillData>(
+    () => File.ReadAllText(path)));
+```
+
+```json
+[
+  { "id": "fire_slash", "cooldown": 5.0, "reactions": [ /* ... */ ] }
+]
+```
+
+### CSV
+
+첫 행을 헤더로 사용하고, 각 행을 `ICsvMapper<T>` 로 변환합니다. 따옴표/콤마/개행을 지원합니다.
+
+```csharp
+skills.Load(new CsvDataLoader<SkillData>(
+    () => File.ReadAllText(path), new SkillCsvMapper()));
+```
+
+`ICsvMapper<T>` 구현체는 보통 [Type Designer](/usage/authoring-tools) 가 생성합니다.
+
+### 커스텀 소스
+
+바이너리, ScriptableObject, 사내 포맷 등은 `IDataLoader<T>` 만 구현하면 됩니다.
+
+```csharp
+public sealed class MyBinaryLoader<T> : IDataLoader<T> where T : IData
+{
+    public IReadOnlyList<T> Load() { /* 직접 디코딩 */ }
+}
+```
+
+> 에디터에서는 JSON, 실제 운영에서는 CSV/Remote 처럼 **소스만 갈아끼우면** 됩니다.
+
+## 데이터 형식 (reactions)
+
+도메인 데이터는 `EntityData` 를 상속합니다. 공통 필드는 `id`, `stats`, `reactions` 입니다.
+
+```csharp
+[Serializable]
+public class SkillData : EntityData   // id / stats / reactions 상속
+{
+    public float cooldown;
+    public float castTime;
+}
+```
+
+```json
+{
+  "id": "fire_slash",
+  "cooldown": 5.0,
+  "stats": { "manaCost": 20 },
+  "reactions": [
+    {
+      "trigger": "on_use",
+      "conditions": [{ "type": "alive" }],
+      "effects": [{ "type": "damage", "params": { "power": 1.8 } }]
+    }
+  ]
+}
+```
+
+`params` 는 임의 키-값(`ParamBag`)으로, effect/condition 이 `ctx.Params.Get<float>("power")`
+처럼 타입 변환해 읽습니다.

@@ -1,0 +1,85 @@
+---
+title: 리액션과 기본 동작
+description: ReactionEngine 실행 흐름과 제공되는 effect·condition·trigger.
+---
+
+## 실행 흐름
+
+```csharp
+var engine = new ReactionEngine();
+engine.Run("on_use", skillData, ctx);
+```
+
+`Run(trigger, data, ctx)` 는 `data.reactions` 를 순회하며 각 리액션을 이렇게 처리합니다.
+
+```
+1. trigger 채널 이름 일치?            (아니면 skip)
+2. 트리거 가드 통과?                  (TriggerRegistry, 없으면 통과)
+3. 모든 조건(AND) 통과?               (ConditionRegistry)
+4. 효과를 순서대로 실행               (EffectRegistry)
+```
+
+반환값은 실제로 실행된 리액션 수입니다.
+
+## ReactionContext
+
+```csharp
+var ctx = new ReactionContext
+{
+    Source  = caster,     // 주체
+    Target  = target,     // 단일 대상
+    Targets = targets,    // 광역 대상 (있으면 우선)
+    World   = world,      // 스폰/조회 경계
+};
+```
+
+effect 는 `ctx.Params` 로 자기 인자를 읽습니다. 엔진이 항목마다 주입합니다.
+
+## 기본 Effect
+
+| type | 설명 | params |
+|---|---|---|
+| `damage` | `atk*power + flat - def` 만큼 hp 감소 | `power`, `flat` |
+| `heal` | `atk*power + flat` 회복 (hp_max 상한) | `power`, `flat` |
+| `set_stat` | 스탯 기본값 설정 | `stat`, `value` |
+| `add_stat` | 스탯 기본값 증감 | `stat`, `delta` |
+| `add_modifier` | 스탯 수정자 추가 (버프 기본형) | `stat`, `modifier`, `value`, `source` |
+| `remove_modifier` | source 토큰의 수정자 제거 | `source` |
+| `spawn` | World 로 엔티티 스폰 | `entityId` |
+| `log` | 디버그 로그 | `message` |
+
+`modifier` 값은 `flat` / `percent_add` / `percent_mul` 입니다. 대상은 `Targets` 가 있으면
+전부, 없으면 `Target` 입니다.
+
+## 기본 Condition
+
+| type | 설명 | params |
+|---|---|---|
+| `always` | 항상 참 | — |
+| `alive` / `dead` | 대상 생존/사망 | — |
+| `chance` | 확률 통과 | `value` (0~1) |
+| `hp_below` / `hp_above` | HP 비율 비교 | `value` (0~1) |
+| `stat_above` / `stat_below` | 스탯 값 비교 | `stat`, `value` |
+
+조건은 별도 지정이 없으면 `Target`(없으면 `Source`)을 평가합니다.
+
+## 기본 Trigger 가드
+
+대부분의 트리거(`on_use`, `on_hit`, `on_equip` 등)는 채널 이름만으로 발동하므로 가드가 없습니다.
+임계값 비교가 필요한 트리거만 가드를 둡니다.
+
+| type | 설명 | triggerParams |
+|---|---|---|
+| `on_hp_below` | Source HP 비율이 threshold 이하일 때만 발동 | `threshold` (0~1) |
+
+## 스탯 관례
+
+기본 effect/condition 은 다음 키를 사용합니다 (`StatKeys`). 다른 체계를 쓰려면 effect 를
+직접 등록해 덮어쓰면 됩니다.
+
+| 키 | 의미 |
+|---|---|
+| `hp` | 현재 체력 (리소스) |
+| `hp_max` | 최대 체력 (비율 조건 분모) |
+| `atk` | 공격력 (수정자 적용) |
+| `def` | 방어력 (수정자 적용) |

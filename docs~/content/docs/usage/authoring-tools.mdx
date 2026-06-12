@@ -1,0 +1,60 @@
+---
+title: 저작 도구
+description: UIToolkit 기반 Type Designer 와 Data Editor.
+---
+
+데이터를 JSON 으로 손수 쓰지 않습니다. 두 개의 UIToolkit 에디터 창이 코드와 데이터를 생성합니다.
+
+## Type Designer — 타입에서 코드 생성
+
+메뉴: **Tools ▸ AchReactive ▸ Type Designer**
+
+```
+Type Name:   [ Monster        ]
+Base Type:   [ EntityData ▾   ]
+Output:      [ Assets/Generated ]
+Fields:
+  [ hp        ] [ Float    ▾ ] [−]
+  [ dropTable ] [ StringArray ▾ ] [−]
+  [ + Add Field ]
+                              [ Generate ]
+```
+
+**Generate** 를 누르면 두 파일이 생성됩니다.
+
+- `MonsterData.cs` — `EntityData` 를 상속한 `IData` 구현 (Newtonsoft 호환)
+- `MonsterCsvMapper.cs` — `ICsvMapper<MonsterData>` 구현
+
+지원 필드 타입: `string`, `int`, `float`, `bool`, 그리고 각 배열형(`string[]` 등).
+배열은 CSV 에서 `|` 로 구분합니다.
+
+생성을 원치 않으면 손으로 `class MonsterData : EntityData { ... }` 를 써도 100% 동작합니다.
+
+## Data Editor — 데이터 생성/편집
+
+메뉴: **Tools ▸ AchReactive ▸ Data Editor**
+
+- 좌측: 인스턴스 목록 (+ Instance 로 추가)
+- 우측: 선택 인스턴스의 `id` 와 **Reactions 빌더**
+  - **Trigger** 드롭다운 — 등록된 트리거 + 일반 채널(on_use, on_hit …)
+  - **Conditions / Effects** — `type` 은 레지스트리에서 채운 드롭다운, `params` 는 JSON
+- 상단 **Export JSON…** — `reactions` 형식 배열로 저장
+
+```
+Reactions
+ ┌────────────────────────────────────────┐
+ │ Trigger: [ on_use ▾ ]              [−]  │
+ │ Conditions (AND)                        │
+ │   [ alive ▾ ] [ {} ]              [−]   │
+ │   [ + Condition ]                       │
+ │ Effects                                 │
+ │   [ damage ▾ ] [ { "power": 1.8 } ] [−] │
+ │   [ + Effect ]                          │
+ └────────────────────────────────────────┘
+```
+
+핵심은 **trigger/condition/effect 타입을 직접 타이핑하지 않는다**는 점입니다.
+드롭다운이 레지스트리에 실제 등록된 이름만 노출하므로 오타·미등록 타입이 원천 차단됩니다.
+저장된 JSON 은 `JsonDataLoader` 가 그대로 읽습니다.
+
+> 저작은 UI, 런타임 소비는 데이터 파일 — 사용자가 JSON 을 직접 만질 필요가 없습니다.
