@@ -1,0 +1,118 @@
+---
+title: Getting Started
+description: From installing Skill Creator to running your first skill.
+---
+
+## Installation
+
+In Unity Package Manager, select **Add package from git URL** and enter the following URL.
+
+```
+https://github.com/achieveonepark/skill-creator.git
+```
+
+Or add it directly to `Packages/manifest.json`.
+
+```json
+{
+  "dependencies": {
+    "com.skillforge.core": "https://github.com/achieveonepark/skill-creator.git"
+  }
+}
+```
+
+The minimum requirement is **Unity 2021.3 or later**. There are no external package dependencies.
+
+## 1. Implement the integration boundary
+
+Skill Creator does not force your combat system. You only need to implement two interfaces to connect.
+
+- `IBattleUnit` — A combat unit (character/monster)
+- `IUnitRegistry` — Unit lookup for area targeting
+
+`Stats` / `Cooldowns` / `Buffs` can use the implementations provided by Skill Creator (`StatSheet`, `CooldownStore`, `BuffContainer`) directly.
+
+```csharp
+public sealed class MyUnit : MonoBehaviour, IBattleUnit
+{
+    [SerializeField] private int _team;
+    [SerializeField] private float _maxHp = 1000f, _attack = 100f;
+    private float _hp;
+
+    public string Id => name;
+    public StatSheet Stats { get; private set; }
+    public CooldownStore Cooldowns { get; private set; }
+    public BuffContainer Buffs { get; private set; }
+
+    public bool IsAlive => _hp > 0f;
+    public float HpRatio => _hp / _maxHp;
+    public Vector3 Position => transform.position;
+    public Vector3 Forward => transform.forward;
+
+    void Awake()
+    {
+        Stats = new StatSheet();
+        Stats.SetBase("attack", _attack);
+        Cooldowns = new CooldownStore();
+        Buffs = new BuffContainer();
+        _hp = _maxHp;
+    }
+
+    public bool IsEnemyOf(IBattleUnit other) => other is MyUnit u && u._team != _team;
+    public void TakeDamage(float amount, string damageType) => _hp = Mathf.Max(0, _hp - amount);
+    public void Heal(float amount) => _hp = Mathf.Min(_maxHp, _hp + amount);
+}
+```
+
+<Callout title="Sample included">
+Import **Samples → Basic Setup** from Package Manager to get the above implementation (`SampleBattleUnit`),
+`SampleUnitRegistry`, a bootstrap example, and sample JSON files.
+</Callout>
+
+## 2. Configure the system
+
+The `SkillSystem` facade wires up the database, runner, and buff controller all at once.
+
+```csharp
+var system = new SkillSystem(
+    registry: myUnitRegistry,
+    vfxPlayer: myVfxPlayer,   // optional (can be null)
+    sfxPlayer: mySfxPlayer,   // optional (can be null)
+    logger: UnityCombatLogger.Instance);
+
+system.LoadFromJson(skillsJson, buffsJson);
+```
+
+## 3. Tick every frame
+
+Call `Tick` every frame to advance buff durations and periodic effects.
+
+```csharp
+void Update() => system.Tick(Time.deltaTime);
+```
+
+## 4. Use a skill
+
+```csharp
+// Immediate execution (ignores cast time)
+SkillUseResult result = system.Use("fire_slash", caster, target);
+if (!result.Success)
+    Debug.Log(result.Status); // SkillNotFound / OnCooldown / NoTargets / ConditionFailed
+
+// Use a coroutine to wait for cast time
+StartCoroutine(system.Runner.UseRoutine("fire_slash", caster, target,
+    r => Debug.Log(r.Status)));
+```
+
+## Data location
+
+The recommended storage location differs between development and production.
+
+| Phase | Location |
+| --- | --- |
+| Development | `Assets/GameData/Skills/skills.json` |
+| Included in build | `StreamingAssets/GameData/skills.json` |
+| Runtime patch | `Application.persistentDataPath/GameData/skills.json` |
+| Remote | `CDN/GameData/skills.json` |
+
+`SkillDataLoader` accepts a plain string, so it works identically regardless of where you load from.

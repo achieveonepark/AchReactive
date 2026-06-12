@@ -1,0 +1,68 @@
+---
+title: Skill Creator
+description: Unityでスキル・バフ・ターゲティング・条件・エフェクトをデータの組み合わせで制作・検証するコンテンツ制作ツール。
+---
+
+**Skill Creator** は、Unityでスキルとバフを**データ（JSON）ベース**で、コードのハードコーディングなしに制作できるコンテンツ制作ツールです。
+
+スキルを巨大なクラスとして作るのではなく、小さな機能の部品をデータで組み合わせます。`ScriptableObject` への依存を最小限に抑え、JSON / CSV / Spreadsheet / リモートデータベースで運用できます。
+
+```text
+Trigger → Targeting → Condition → Effect → Result
+```
+
+## 何を解決するのか
+
+このツールの本質はスキルシステム自体ではなく、**コンテンツ制作パイプライン**です。
+
+| 良い方向 | 悪い方向 |
+| --- | --- |
+| プランナーがデータを作る | スキルごとにクラスを作る |
+| ツールがエラーを検出する | 例外スキルが増え続ける |
+| ランタイムはデータをそのまま実行する | データはあるが結局コード修正が必要 |
+| シミュレーターがバランスを検証する | 検証なしでランタイムでクラッシュ |
+| 運用データに簡単に切り替えられる | Unity Editor 内でしか編集できない |
+
+## 概要
+
+スキル1つはこのようなJSONで表現されます。
+
+```json
+{
+  "id": "fire_slash",
+  "name": "炎の斬撃",
+  "cooldown": 5.0,
+  "castTime": 0.3,
+  "targeting": { "type": "cone", "range": 5.0, "angle": 60, "maxTargets": 5 },
+  "conditions": [{ "type": "alive" }],
+  "effects": [
+    { "type": "damage", "power": 1.8, "damageType": "physical" },
+    { "type": "add_buff", "buffId": "burn", "duration": 5.0 },
+    { "type": "play_vfx", "vfxId": "fire_slash_vfx" }
+  ]
+}
+```
+
+ランタイムはこのデータをそのまま実行します。
+
+```csharp
+var system = new SkillSystem(unitRegistry, vfxPlayer, sfxPlayer, UnityCombatLogger.Instance);
+system.LoadFromJson(skillsJson, buffsJson);
+
+system.Use("fire_slash", caster, target);
+```
+
+## 主な特徴
+
+- **外部依存性ゼロ** — Unityの組み込み `JsonUtility` のみ使用。UniTask・Newtonsoftは不要です。
+- **統合境界インターフェース** — `IBattleUnit` を実装するだけで、あらゆる戦闘システムと連携できます。
+- **検証優先** — `DataValidator` が不正なデータをランタイム前に検出します。
+- **エディターツール** — Skill / Buff Editor、Preview Simulator を提供。
+- **ランタイムパッチ可能** — JSONを差し替えるだけでバランス変更が即座に反映されます。
+
+## 次のステップ
+
+- [はじめに](/getting-started) — インストールと最初のスキル実行
+- [コアコンセプト](/concepts) — 実行フローと設計思想
+- [データフォーマット](/data-format) — スキル・バフ JSONリファレンス
+- [ランタイム](/runtime) — `SkillSystem` と統合方法

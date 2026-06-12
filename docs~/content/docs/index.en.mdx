@@ -1,0 +1,68 @@
+---
+title: Skill Creator
+description: A content authoring tool for crafting and validating skills, buffs, targeting, conditions, and effects through data composition in Unity.
+---
+
+**Skill Creator** is a content authoring tool that lets you create skills and buffs in Unity using a **data (JSON) driven** approach — no code hardcoding required.
+
+Instead of building each skill as a monolithic class, you compose small functional pieces as data. It minimizes `ScriptableObject` dependencies and operates on JSON / CSV / Spreadsheet / Remote Data sources.
+
+```text
+Trigger → Targeting → Condition → Effect → Result
+```
+
+## What problem does it solve
+
+The essence of this tool is not the skill system itself, but a **content production pipeline**.
+
+| Good direction | Bad direction |
+| --- | --- |
+| Designers create data | A new class per skill |
+| The tool catches errors | Special-case skills keep growing |
+| The runtime executes data as-is | Data exists but code changes are still required |
+| The simulator validates balance | Crashes at runtime without validation |
+| Easy to swap with live data | Only editable inside the Unity Editor |
+
+## At a glance
+
+A single skill is expressed with JSON like this.
+
+```json
+{
+  "id": "fire_slash",
+  "name": "Fire Slash",
+  "cooldown": 5.0,
+  "castTime": 0.3,
+  "targeting": { "type": "cone", "range": 5.0, "angle": 60, "maxTargets": 5 },
+  "conditions": [{ "type": "alive" }],
+  "effects": [
+    { "type": "damage", "power": 1.8, "damageType": "physical" },
+    { "type": "add_buff", "buffId": "burn", "duration": 5.0 },
+    { "type": "play_vfx", "vfxId": "fire_slash_vfx" }
+  ]
+}
+```
+
+The runtime executes this data directly.
+
+```csharp
+var system = new SkillSystem(unitRegistry, vfxPlayer, sfxPlayer, UnityCombatLogger.Instance);
+system.LoadFromJson(skillsJson, buffsJson);
+
+system.Use("fire_slash", caster, target);
+```
+
+## Key features
+
+- **Zero external dependencies** — Uses only Unity's built-in `JsonUtility`. No UniTask or Newtonsoft required.
+- **Integration boundary interfaces** — Implement just `IBattleUnit` to connect with any combat system.
+- **Validation first** — `DataValidator` catches invalid data before it reaches the runtime.
+- **Editor tools** — Skill / Buff Editor and Preview Simulator included.
+- **Runtime patchable** — Swap the JSON and balance changes take effect immediately.
+
+## Next steps
+
+- [Getting Started](/getting-started) — Installation and running your first skill
+- [Core Concepts](/concepts) — Execution flow and design philosophy
+- [Data Format](/data-format) — Skill and buff JSON reference
+- [Runtime](/runtime) — `SkillSystem` and integration

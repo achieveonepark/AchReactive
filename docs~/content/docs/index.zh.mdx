@@ -1,0 +1,68 @@
+---
+title: Skill Creator
+description: 在Unity中通过数据组合来制作和验证技能、增益、目标选择、条件与效果的内容创作工具。
+---
+
+**Skill Creator** 是一款内容创作工具，让你可以在Unity中以**数据（JSON）驱动**的方式创建技能和增益效果，无需硬编码。
+
+它不将技能制作成庞大的类，而是将小型功能片段以数据的形式组合。将 `ScriptableObject` 依赖降至最低，支持基于 JSON / CSV / Spreadsheet / 远程数据 的运营方式。
+
+```text
+Trigger → Targeting → Condition → Effect → Result
+```
+
+## 解决什么问题
+
+该工具的本质不是技能系统本身，而是**内容制作流水线**。
+
+| 好的方向 | 坏的方向 |
+| --- | --- |
+| 策划人员创建数据 | 每个技能都需要建一个类 |
+| 工具自动检测错误 | 特例技能不断增加 |
+| 运行时直接执行数据 | 数据有了但仍需修改代码 |
+| 模拟器验证数值平衡 | 没有验证，运行时崩溃 |
+| 可轻松替换为线上数据 | 只能在Unity Editor内修改 |
+
+## 概览
+
+一个技能用如下JSON表示。
+
+```json
+{
+  "id": "fire_slash",
+  "name": "炎斩",
+  "cooldown": 5.0,
+  "castTime": 0.3,
+  "targeting": { "type": "cone", "range": 5.0, "angle": 60, "maxTargets": 5 },
+  "conditions": [{ "type": "alive" }],
+  "effects": [
+    { "type": "damage", "power": 1.8, "damageType": "physical" },
+    { "type": "add_buff", "buffId": "burn", "duration": 5.0 },
+    { "type": "play_vfx", "vfxId": "fire_slash_vfx" }
+  ]
+}
+```
+
+运行时直接执行这份数据。
+
+```csharp
+var system = new SkillSystem(unitRegistry, vfxPlayer, sfxPlayer, UnityCombatLogger.Instance);
+system.LoadFromJson(skillsJson, buffsJson);
+
+system.Use("fire_slash", caster, target);
+```
+
+## 核心特性
+
+- **零外部依赖** — 仅使用Unity内置的 `JsonUtility`，无需UniTask或Newtonsoft。
+- **集成边界接口** — 只需实现 `IBattleUnit` 即可与任何战斗系统对接。
+- **验证优先** — `DataValidator` 在运行时之前拦截无效数据。
+- **编辑器工具** — 提供 Skill / Buff Editor 和 Preview Simulator。
+- **运行时可热更** — 替换JSON文件即可立即生效。
+
+## 下一步
+
+- [快速开始](/getting-started) — 安装和运行第一个技能
+- [核心概念](/concepts) — 执行流程与设计哲学
+- [数据格式](/data-format) — 技能与增益 JSON 参考
+- [运行时](/runtime) — `SkillSystem` 与集成方式

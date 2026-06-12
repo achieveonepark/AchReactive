@@ -1,13 +1,3 @@
 {
-  "pages": [
-    "index",
-    "getting-started",
-    "concepts",
-    "data-format",
-    "runtime",
-    "buffs",
-    "editor-tools",
-    "api",
-    "changelog"
-  ]
+  "pages": ["index", "getting-started", "usage", "api", "changelog"]
 }

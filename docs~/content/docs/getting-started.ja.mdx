@@ -1,0 +1,118 @@
+---
+title: はじめに
+description: Skill Creator のインストールから最初のスキル実行まで。
+---
+
+## インストール
+
+Unity Package Manager で **Add package from git URL** を選択し、以下のURLを入力します。
+
+```
+https://github.com/achieveonepark/skill-creator.git
+```
+
+または `Packages/manifest.json` に直接追加します。
+
+```json
+{
+  "dependencies": {
+    "com.skillforge.core": "https://github.com/achieveonepark/skill-creator.git"
+  }
+}
+```
+
+要件は **Unity 2021.3 以降** です。外部パッケージの依存関係はありません。
+
+## 1. 統合境界の実装
+
+Skill Creator はあなたの戦闘システムを強制しません。2つのインターフェースを実装するだけで連携できます。
+
+- `IBattleUnit` — 戦闘ユニット（キャラクター/モンスター）
+- `IUnitRegistry` — 広域ターゲティング用のユニット検索
+
+`Stats` / `Cooldowns` / `Buffs` は Skill Creator が提供する実装体（`StatSheet`、`CooldownStore`、`BuffContainer`）をそのまま使用できます。
+
+```csharp
+public sealed class MyUnit : MonoBehaviour, IBattleUnit
+{
+    [SerializeField] private int _team;
+    [SerializeField] private float _maxHp = 1000f, _attack = 100f;
+    private float _hp;
+
+    public string Id => name;
+    public StatSheet Stats { get; private set; }
+    public CooldownStore Cooldowns { get; private set; }
+    public BuffContainer Buffs { get; private set; }
+
+    public bool IsAlive => _hp > 0f;
+    public float HpRatio => _hp / _maxHp;
+    public Vector3 Position => transform.position;
+    public Vector3 Forward => transform.forward;
+
+    void Awake()
+    {
+        Stats = new StatSheet();
+        Stats.SetBase("attack", _attack);
+        Cooldowns = new CooldownStore();
+        Buffs = new BuffContainer();
+        _hp = _maxHp;
+    }
+
+    public bool IsEnemyOf(IBattleUnit other) => other is MyUnit u && u._team != _team;
+    public void TakeDamage(float amount, string damageType) => _hp = Mathf.Max(0, _hp - amount);
+    public void Heal(float amount) => _hp = Mathf.Min(_maxHp, _hp + amount);
+}
+```
+
+<Callout title="サンプル提供">
+Package Manager の **Samples → Basic Setup** をインポートすると、上記の実装（`SampleBattleUnit`）と
+`SampleUnitRegistry`、ブートストラップ例、サンプルJSONが一緒に提供されます。
+</Callout>
+
+## 2. システムの構成
+
+`SkillSystem` ファサードがデータベース・ランナー・バフコントローラーを一括で配線します。
+
+```csharp
+var system = new SkillSystem(
+    registry: myUnitRegistry,
+    vfxPlayer: myVfxPlayer,   // 任意 (null可)
+    sfxPlayer: mySfxPlayer,   // 任意 (null可)
+    logger: UnityCombatLogger.Instance);
+
+system.LoadFromJson(skillsJson, buffsJson);
+```
+
+## 3. 毎フレームの進行
+
+バフの持続時間と周期効果を進めるには、毎フレーム `Tick` を呼び出します。
+
+```csharp
+void Update() => system.Tick(Time.deltaTime);
+```
+
+## 4. スキルの使用
+
+```csharp
+// 即時実行（詠唱時間を無視）
+SkillUseResult result = system.Use("fire_slash", caster, target);
+if (!result.Success)
+    Debug.Log(result.Status); // SkillNotFound / OnCooldown / NoTargets / ConditionFailed
+
+// 詠唱時間を待つ場合はコルーチン
+StartCoroutine(system.Runner.UseRoutine("fire_slash", caster, target,
+    r => Debug.Log(r.Status)));
+```
+
+## データの保存場所
+
+開発段階と運用段階で推奨される保存場所が異なります。
+
+| フェーズ | 場所 |
+| --- | --- |
+| 開発中 | `Assets/GameData/Skills/skills.json` |
+| ビルドに含める | `StreamingAssets/GameData/skills.json` |
+| ランタイムパッチ | `Application.persistentDataPath/GameData/skills.json` |
+| リモート | `CDN/GameData/skills.json` |
+
+`SkillDataLoader` は文字列のみを受け取るため、どこから読み込んでも同様に動作します。
