@@ -5,7 +5,14 @@ export default defineConfig({
   root: 'content/docs',
   base: '/AchReactive/',
   outDir: 'out',
-  lang: 'ko',
+  lang: 'ko-KR',
+  locales: [
+    { lang: 'ko', label: '한국어' },
+    { lang: 'en', label: 'English' },
+    { lang: 'ja', label: '日本語' },
+    { lang: 'zh', label: '简体中文' },
+  ],
+  route: { localeRedirect: 'never' },
   title: 'AchReactive',
   description:
     '데이터 조합으로 모든 게임 콘텐츠를 만드는 도메인 무관 리액션 프레임워크.',
@@ -16,17 +23,6 @@ export default defineConfig({
   globalStyles: fileURLToPath(new URL('./theme/index.css', import.meta.url)),
   themeConfig: {
     darkMode: 'dark',
-    nav: [
-      {
-        text: '언어',
-        items: [
-          { text: '한국어', link: '/ko/' },
-          { text: 'English', link: '/en/' },
-          { text: '日本語', link: '/ja/' },
-          { text: '简体中文', link: '/zh/' },
-        ],
-      },
-    ],
     sidebar: {
       '/ko/': [
         {
