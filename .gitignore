@@ -28,3 +28,10 @@ out/
 .source/
 *.log
 .env*.local
+
+# Preserve source files in the intentionally tilde-suffixed docs directory.
+!docs~/
+!docs~/**
+docs~/node_modules/
+docs~/out/
+docs~/.rspress/

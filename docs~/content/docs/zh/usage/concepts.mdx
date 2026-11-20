@@ -1,0 +1,77 @@
+---
+title: 核心概念
+description: 触发器·条件·效果与领域无关的数据模型。
+---
+
+## 把乘法变成加法
+
+如果为每个领域都构建专用系统（SkillSystem、MonsterSystem、…），
+就必须每次都填满 `领域 × 动作` 的矩阵。AchReactive 让**动作池被所有领域
+共享**，从而把它变成 `领域 + 动作`。
+
+- 添加新领域 → 一个数据类（0 行系统代码）
+- 复用已有动作 → 0 代码，只需数据
+- 真正的新动作 → 一个函数，之后所有领域共享
+
+## 四个层
+
+```
+Data Layer       IData · IDataLoader<T> · DataBase<T>      (泛型，包提供)
+Reaction Layer   Reaction · ReactionEngine · Registry      (泛型，包提供)
+Behavior Pool    [Effect("damage")] [Condition("alive")]   (游戏编写，领域无关)
+Domain Data      SkillData · MonsterData · ItemData         (数据，可代码生成)
+```
+
+上面两层由包提供且不会改变。你只需填充下面两层即可。
+
+## 响应 = 触发器 → 条件 → 效果
+
+所有领域都用同一种语言表达。
+
+```
+Reaction
+ ├─ trigger      "on_use" | "on_hit" | "on_hp_below" ...
+ ├─ conditions   以 AND 评估 (alive, hp_below, chance ...)
+ └─ effects      按顺序执行 (damage, heal, add_modifier ...)
+```
+
+即便领域不同，形态也完全一致。
+
+```json
+// 技能 — 使用时造成伤害
+{ "trigger": "on_use",
+  "effects": [{ "type": "damage", "params": { "power": 1.8 } }] }
+
+// 怪物 — HP 30% 以下时狂暴化
+{ "trigger": "on_hp_below", "triggerParams": { "threshold": 0.3 },
+  "effects": [{ "type": "add_modifier", "params": { "stat": "atk", "modifier": "percent_add", "value": 0.5 } }] }
+
+// 道具 — 装备时产生光环
+{ "trigger": "on_equip",
+  "effects": [{ "type": "add_modifier", "params": { "stat": "def", "modifier": "flat", "value": 5 } }] }
+```
+
+无论是技能使用还是道具使用，`add_modifier` 都是**同一份代码**。
+
+## 集成边界
+
+游戏只需实现两个接口。
+
+- **`IEntity`** — `Id`、`Position`、`Stats`（StatSheet）、`IsAlive`
+- **`IWorld`** — `Spawn`、`Collect`
+
+effect/condition 通过 `ReactionContext` 访问 `Source`/`Target`/`Targets`/`World`。
+
+## 不使用 typeof
+
+在组合多个领域时，不使用 `Dictionary<Type, object>` 这类以类型为键的服务定位器。
+而是**显式持有**每个 `DataBase<T>`，需要跨领域引用的 effect 则通过
+[手动注册 + 闭包捕获](/zh/usage/extending#跨领域)来解决。
+
+```csharp
+public sealed class GameDataContext
+{
+    public readonly DataBase<SkillData>   Skills   = new();
+    public readonly DataBase<MonsterData> Monsters = new();
+}
+```

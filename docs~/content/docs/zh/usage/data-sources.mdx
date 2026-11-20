@@ -1,0 +1,95 @@
+---
+title: 数据与来源
+description: IData、DataBase 以及 JSON·CSV·自定义加载器。
+---
+
+## IData 与 DataBase
+
+所有领域数据都实现 `IData`（即 `string Id`）。`DataBase<T>` 是一个 `id → 定义` 的
+内存索引，**所有领域都以泛型方式共享这一个类**。
+
+```csharp
+var skills = new DataBase<SkillData>();
+skills.Load(loader);              // 全量替换
+skills.Add(loader);               // 合并
+SkillData s = skills.Get("fire_slash");
+bool has   = skills.Has("fire_slash");
+```
+
+## 来源无关 — IDataLoader&lt;T&gt;
+
+无论从哪里读取数据，都通过 `IDataLoader<T>` 这一相同的边界。包提供了两个实现。
+
+### JSON
+
+基于 Newtonsoft.Json，因此可直接读取顶层数组。（无需包装类）
+
+```csharp
+// 直接传字符串
+skills.Load(new JsonDataLoader<SkillData>(json));
+
+// 延迟读取（文件/StreamingAssets/网络）
+skills.Load(new JsonDataLoader<SkillData>(
+    () => File.ReadAllText(path)));
+```
+
+```json
+[
+  { "id": "fire_slash", "cooldown": 5.0, "reactions": [ /* ... */ ] }
+]
+```
+
+### CSV
+
+将第一行作为表头，并用 `ICsvMapper<T>` 转换每一行。支持引号/逗号/换行。
+
+```csharp
+skills.Load(new CsvDataLoader<SkillData>(
+    () => File.ReadAllText(path), new SkillCsvMapper()));
+```
+
+`ICsvMapper<T>` 实现类通常由 [Type Designer](/zh/usage/authoring-tools) 生成。
+
+### 自定义来源
+
+二进制、ScriptableObject、公司内部格式等，只需实现 `IDataLoader<T>` 即可。
+
+```csharp
+public sealed class MyBinaryLoader<T> : IDataLoader<T> where T : IData
+{
+    public IReadOnlyList<T> Load() { /* 自行解码 */ }
+}
+```
+
+> 像编辑器用 JSON、实际运营用 CSV/Remote 这样，**只需替换来源**即可。
+
+## 数据格式（reactions）
+
+领域数据继承 `EntityData`。公共字段为 `id`、`stats`、`reactions`。
+
+```csharp
+[Serializable]
+public class SkillData : EntityData   // 继承 id / stats / reactions
+{
+    public float cooldown;
+    public float castTime;
+}
+```
+
+```json
+{
+  "id": "fire_slash",
+  "cooldown": 5.0,
+  "stats": { "manaCost": 20 },
+  "reactions": [
+    {
+      "trigger": "on_use",
+      "conditions": [{ "type": "alive" }],
+      "effects": [{ "type": "damage", "params": { "power": 1.8 } }]
+    }
+  ]
+}
+```
+
+`params` 是任意键值对（`ParamBag`），effect/condition 会像 `ctx.Params.Get<float>("power")`
+这样进行类型转换后读取。

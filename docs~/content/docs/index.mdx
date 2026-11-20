@@ -1,52 +1,10 @@
 ---
-title: AchReactive
-description: 데이터 조합으로 모든 게임 콘텐츠를 만드는 도메인 무관 리액션 프레임워크.
+title: AchReactive 문서
+description: AchReactive 문서의 언어를 선택합니다.
+head:
+  - - meta
+    - http-equiv: refresh
+      content: 0; url=/AchReactive/ko/
 ---
 
-**AchReactive** 는 스킬·몬스터·아이템·맵·퀘스트 등 모든 게임 콘텐츠를
-**트리거 → 조건 → 효과** 의 데이터 조합으로 만드는 Unity 프레임워크입니다.
-
-## 핵심 아이디어
-
-> 도메인은 무한하지만, 동작(primitive)은 유한하다.
-
-도메인마다 시스템을 새로 만들면 `도메인 × 동작` 매트릭스를 매번 채워야 합니다.
-AchReactive 는 동작 풀을 **모든 도메인이 공유**하게 만들어 이 곱셈을 덧셈으로 바꿉니다.
-두 번째 도메인부터는 거의 공짜입니다.
-
-```
-        damage  heal  add_modifier  spawn
-Skill     ✓      ✓        ✓
-Monster                    ✓          ✓     ← 같은 effect 재사용
-Item               ✓       ✓
-```
-
-## 특징
-
-- **도메인 무관** — `DataBase<T>` 하나로 Skill/Monster/Item/… 전부 처리
-- **소스 무관** — JSON·CSV·원격 등 어디서든 로드 (`IDataLoader<T>` 만 구현하면 새 소스)
-- **동작 자동등록** — `[Effect]`/`[Condition]`/`[Trigger]` 메서드를 리플렉션으로 수집, 배선 0줄
-- **UIToolkit 저작 도구** — 타입과 데이터를 에디터에서 생성 (JSON 수기 작성 없음)
-- **의존성 최소** — Newtonsoft.Json 하나
-
-## 한눈에 보기
-
-```csharp
-// 1) 동작 풀 자동수집 (기본 effect/condition/trigger 포함)
-EffectRegistry.AutoRegister();
-ConditionRegistry.AutoRegister();
-TriggerRegistry.AutoRegister();
-
-// 2) 데이터 적재 (소스 자유)
-var skills = new DataBase<SkillData>();
-skills.Load(new JsonDataLoader<SkillData>(() => json));
-
-// 3) 실행 — 도메인이 달라도 동일
-engine.Run("on_use", skills.Get("fire_slash"), ctx);
-```
-
-## 다음 단계
-
-- [시작하기](/getting-started) — 설치부터 첫 리액션 실행까지
-- [개념](/usage/concepts) — 트리거/조건/효과와 도메인 모델
-- [확장하기](/usage/extending) — 새 동작·새 도메인 추가
+[한국어 문서로 이동](/ko/)

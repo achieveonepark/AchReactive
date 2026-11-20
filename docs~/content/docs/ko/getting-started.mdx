@@ -1,0 +1,111 @@
+---
+title: 시작하기
+description: AchReactive 설치부터 첫 리액션 실행까지.
+---
+
+## 설치
+
+Unity Package Manager 에서 **Add package from git URL** 을 선택하고 다음 주소를 입력합니다.
+
+```
+https://github.com/achieveonepark/AchReactive.git
+```
+
+또는 `Packages/manifest.json` 에 직접 추가합니다.
+
+```json
+{
+  "dependencies": {
+    "com.achieve.reactive": "https://github.com/achieveonepark/AchReactive.git"
+  }
+}
+```
+
+요구 사항은 **Unity 2021.3 이상** 입니다. 의존성은 `com.unity.nuget.newtonsoft-json` 하나이며
+자동으로 함께 설치됩니다.
+
+## 1. 통합 경계 구현
+
+AchReactive 는 여러분의 게임 구조를 강제하지 않습니다. 두 인터페이스만 구현하면 됩니다.
+
+- `IEntity` — 리액션의 주체/대상 (캐릭터, 몬스터 등)
+- `IWorld` — 스폰/범위 조회 등 월드 경계
+
+```csharp
+using AchReactive;
+using UnityEngine;
+
+public sealed class Character : MonoBehaviour, IEntity
+{
+    public StatSheet Stats { get; } = new StatSheet();   // 패키지 제공, 그대로 사용
+    public string Id => name;
+    public Vector3 Position { get => transform.position; set => transform.position = value; }
+    public bool IsAlive => Stats.GetBase(StatKeys.Hp) > 0f;
+
+    void Awake()
+    {
+        Stats.SetBase(StatKeys.Hp, 100f);
+        Stats.SetBase(StatKeys.HpMax, 100f);
+        Stats.SetBase(StatKeys.Atk, 10f);
+        Stats.SetBase(StatKeys.Def, 2f);
+    }
+}
+```
+
+## 2. 데이터 작성
+
+스킬을 `reactions` 형식의 JSON 으로 정의합니다. (직접 쓰지 않고 [Data Editor](/ko/usage/authoring-tools) 로 만들어도 됩니다.)
+
+```json
+[
+  {
+    "id": "fire_slash",
+    "cooldown": 5.0,
+    "reactions": [
+      {
+        "trigger": "on_use",
+        "conditions": [{ "type": "alive" }],
+        "effects": [
+          { "type": "damage", "params": { "power": 1.8 } },
+          { "type": "log", "params": { "message": "fire_slash 명중!" } }
+        ]
+      }
+    ]
+  }
+]
+```
+
+## 3. 조립과 실행
+
+```csharp
+using AchReactive;
+
+var skills = new DataBase<SkillData>();
+var engine = new ReactionEngine();
+
+void Start()
+{
+    // 동작 풀 자동수집 (기본 damage/heal/… 포함)
+    EffectRegistry.AutoRegister();
+    ConditionRegistry.AutoRegister();
+    TriggerRegistry.AutoRegister();
+
+    // 데이터 적재 — 소스는 자유
+    skills.Load(new JsonDataLoader<SkillData>(() => skillsJson.text));
+}
+
+void UseSkill(IEntity caster, IEntity target)
+{
+    var ctx = new ReactionContext { Source = caster, Target = target };
+    engine.Run("on_use", skills.Get("fire_slash"), ctx);
+}
+```
+
+`damage`, `heal`, `add_modifier` 같은 기본 effect 는 패키지가 제공하므로 별도 코드가 필요 없습니다.
+`Samples` 의 **Basic** 예제에서 동작하는 씬을 바로 확인할 수 있습니다.
+
+## 다음 단계
+
+- [개념](/ko/usage/concepts) — 왜 이런 구조인지
+- [기본 동작 풀](/ko/usage/reactions) — 제공되는 effect/condition 목록
+- [확장하기](/ko/usage/extending) — 새 동작과 새 도메인
